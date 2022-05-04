@@ -1,0 +1,16 @@
+build/client
+build/server
+build/data/dictionnaire.txt
+build/games/hangman_cli
+build/games/hangman_serv
+build/games/test_cli
+build/games/test_serv
+build/lib/libmessage.so
+build/objects/client.o
+build/objects/server.o
+build/objects/games/hangman_cli.o
+build/objects/games/hangman_serv.o
+build/objects/games/test_cli.o
+build/objects/games/test_serv.o
+build/objects/lib/message.o
+game_server.tar.gz
