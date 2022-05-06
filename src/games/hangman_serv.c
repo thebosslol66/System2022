@@ -77,21 +77,13 @@ int have_space(char * str){
 }
 
 int clientPID;
-char * discoverWord = NULL;
-char * word = NULL;
-
+int alarmRaise = 0;
 void handlerALRM(int sig){
 	#ifdef DEBUG
 	fprintf(stderr, "Too long sendig usr1 signal\n");
 	#endif
-	if (discoverWord != NULL) {
-		free(discoverWord);
-	}
-	if (word != NULL) {
-		free(word);
-	}
 	kill(clientPID, SIGUSR1);
-	exit(0);
+	alarmRaise = 1;
 }
 
 int inGame = 0;
@@ -120,6 +112,7 @@ void save_result(int nb, int nb_errors, char * word, time_t *now) {
 			send_string(1, SERV_NOT_ARGEE_WITH_NAME);
 			free(name);
 		}
+		alarm(RESP_TIMEOUT);
 		name = recv_string(0);
 		if (name != NULL){
 			int nameLength = strlen(name);
@@ -131,12 +124,16 @@ void save_result(int nb, int nb_errors, char * word, time_t *now) {
 				return;
 			}
 		}
-	}while(!correct && inGame != SERVER_QUIT);
+	}while((!correct && inGame != SERVER_QUIT) && !alarmRaise);
+	alarm(0);
 	if (inGame == SERVER_QUIT){
 		kill(clientPID, SIGUSR2);
-		free(discoverWord);
-		free(word);
-		exit(0);
+		free(name);
+		return;
+	}
+	if (alarmRaise){
+		free(name);
+		return;
 	}
 
 	record_result(nb, nb_errors, word, name, now);
@@ -204,7 +201,7 @@ int main(int argc, char *argv[]){
 	}
 
 	send_string(1, "OK");
-
+	char * word = NULL;
 	word = get_random_word_from_file(fp);
 	fclose(fp);
 
@@ -232,6 +229,7 @@ int main(int argc, char *argv[]){
 	fprintf(stderr, "string(%d) %s\n", lenWord, word);
 	#endif
 
+	char * discoverWord = NULL;
 	discoverWord = calloc(lenWord+1, sizeof(char));
 	for (int i=0; i<lenWord; i++){
 		discoverWord[i]= '-';
@@ -245,14 +243,14 @@ int main(int argc, char *argv[]){
 
 	int tryUsed = 0;
 	char c;
-	while (!inGame){
+	while (!inGame && !alarmRaise){
 		send_string(1, discoverWord);
 		alarm(RESP_TIMEOUT);
 		if (read(0, &c, sizeof(char)) == -1){
 			dperror("read");
 		}
 
-		if (!inGame){
+		if (!inGame && !alarmRaise){
 		int nbCharFound = 0;
 			for (int i=0; i < lenWord; i++){
 				if (word[i] == c){
@@ -274,7 +272,7 @@ int main(int argc, char *argv[]){
 		}
 	}
 	alarm(0);
-	if (inGame == SERVER_QUIT){
+	if (inGame == SERVER_QUIT || alarmRaise){
 		kill(clientPID, SIGUSR2);
 		free(discoverWord);
 		free(word);

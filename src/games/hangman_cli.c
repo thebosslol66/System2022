@@ -53,14 +53,14 @@ int save_result(){
 		if (fgets(entry, 2, stdin) == NULL){
 			dperror("fgets");
 		}
-		if (inGame != SERVER_QUIT){
+		if (inGame != SERVER_QUIT && inGame != LOSE_OUT_OF_TIME){
 			flush(stdin);
 		}
 	} while(entry[0] != 'Y' && entry[0] != 'y' &&
 		entry[0] != 'N' && entry[0] != 'n' &&
-		inGame != SERVER_QUIT);
+		inGame != SERVER_QUIT && inGame != LOSE_OUT_OF_TIME);
 
-	if (inGame == SERVER_QUIT){
+	if (inGame == SERVER_QUIT || inGame == LOSE_OUT_OF_TIME){
 		free(entry);
 		return 0;
 	}
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]){
 	free(currentWord);
 	free(entry);
 	
-	if (inGame == SERVER_QUIT){
+	if (inGame == SERVER_QUIT || inGame == SERVER_QUIT){
 		return 0;
 	}
 	
