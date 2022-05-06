@@ -1,5 +1,7 @@
 #include "defs.h"
 
+#define LOG_FILE "/tmp/game_server.err"
+
 volatile int usr1_receive = 0;
 
 /* handler du signal SIGUSR1 */
@@ -36,6 +38,25 @@ int digit_in_number(int nb){
 }
 
 int main(int argc, char *argv[]){
+    close(STDERR_FILENO);
+	if (!isatty(STDERR_FILENO) && errno == EBADF){
+		// int output = open(LOG_FILE, O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
+        // if (output < 0){
+        //     fprintf(stderr, "Unable to open log file.\n");
+        //     perror("open");
+		// 	exit(EXIT_FAILURE);
+        // }
+        // lseek(output, 0, SEEK_END);
+		// if(dup2(output, STDERR_FILENO) < 0) {
+		// 	fprintf(stderr,"Unable to duplicate file descriptor.\n");
+        //     perror("dup2");
+		// 	exit(EXIT_FAILURE);
+		// }
+        // fprintf(stdout, "It works\n");
+        freopen(LOG_FILE, "a+", stderr);
+	}
+
+	fprintf(stderr, "It works\n");
 
     if(access(PID_AD_FILE, F_OK) == 0){
         #ifdef DEBUG
@@ -44,8 +65,7 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-
-    int fd = open(PID_AD_FILE, O_CREAT|O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    int fd = open(PID_AD_FILE, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if (fd == -1) {
         dperror("open");
         exit(2);
@@ -131,7 +151,7 @@ int main(int argc, char *argv[]){
                         haveError = 1;
                     }
                     else{
-                        size_t pathLength = strlen(FIFO_DIR)+3+digit_in_number(clientPID)+7;
+                        size_t pathLength = strlen(FIFO_DIR)+4+digit_in_number(clientPID)+8;
                         char * from_cli = calloc(pathLength+1, sizeof(char));
                         char * to_cli = calloc(pathLength+1, sizeof(char));
                         sprintf(from_cli, "%s/cli%d_0.fifo", FIFO_DIR, clientPID);
@@ -151,6 +171,8 @@ int main(int argc, char *argv[]){
 
                             int wfd = open(to_cli, O_WRONLY);
                             int rfd = open(from_cli, O_RDONLY);
+							free(from_cli);
+							free(to_cli);
 
                             if (rfd == -1 || wfd == -1){
                                 dperror("open");
@@ -164,10 +186,8 @@ int main(int argc, char *argv[]){
                                             haveError = 1;
                                         }
                                         case 0:{
-                                            dup2(rfd, 0);
-                                            dup2(wfd, 1);
-                                            free(from_cli);
-                                            free(to_cli);
+                                            dup2(rfd, STDIN_FILENO);
+                                            dup2(wfd, STDOUT_FILENO);
                                             #ifdef VALGRIND
                                             int len = 0;
                                             while (programParam[len] != NULL){
@@ -175,7 +195,6 @@ int main(int argc, char *argv[]){
                                             }
                                             char * progServName = calloc(strlen(programParam[0])+3, sizeof(char));
                                             sprintf(progServName, "./%s", programParam[0]);
-                                            free(programParam[0]);
                                             char **nargv = calloc(len+4, sizeof(char*));
                                             nargv[0] = "valgrind";
                                             nargv[1] = "-s";
@@ -185,10 +204,17 @@ int main(int argc, char *argv[]){
                                                 nargv[i+3] = programParam[i];
                                             }
                                             execvp(nargv[0], nargv);
+											free(progServName);
+											free(nargv);
                                             #else
                                             execv(programParam[0], programParam);
+											
                                             #endif
+											close(wfd);
+											close(rfd);
+											free_recv_argv(programParam);
                                             dperror("execv");
+											exit(1);
                                         }
                                         default:
                                             break;
@@ -200,23 +226,26 @@ int main(int argc, char *argv[]){
                                 }
                                 
                             }
+							close(wfd);
+							close(rfd);
                         }
-                        free(from_cli);
-                        free(to_cli);
                     }
                 }
                 if (haveError != 0){
                     kill(clientPID, SIGUSR2);
                 }
+				free_recv_argv(programParam);
             }
             usr1_receive = 0;
         }
     }
 
-    unlink(PID_AD_FILE);
     for (int i=0; i< childNb; i++){
         wait(NULL);
     }
+	unlink(PID_AD_FILE);
+    fflush(stderr);
+    fclose(stdout);
     
     return 0;
 }

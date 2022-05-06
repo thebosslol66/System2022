@@ -79,3 +79,12 @@ char **recv_argv(int fd){
     }
     return argv;
 }
+
+void free_recv_argv(char ** mes){
+    int i=0;
+    while (mes[i] != NULL){
+        free(mes[i]);
+        i++;
+    }
+    free(mes);
+}

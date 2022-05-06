@@ -17,7 +17,7 @@ CFLAGS=-g -Wall -std=c99 -O2 -Os
 LDLIBS=-I${SOURCEDIR}/lib
 LOADLIBES=-L${OUTDIR}/lib
 LDFLAGS=-lmessage
-TARGETST=server client
+TARGETST=server client launch_daemon
 GAMEST=test_cli test_serv hangman_cli hangman_serv
 
 ifeq ($(DEBUG), 1)
@@ -28,9 +28,6 @@ ifeq ($(VALGRIND), 1)
 endif
 endif
 
-
-
-
 TARGETS := $(foreach target, ${TARGETST}, $(addprefix ${OUTDIR}/, ${target}))
 GAMES := $(foreach game, ${GAMEST}, $(addprefix ${OUTDIR}/games/, ${game}))
 OBJSTARGETS := $(foreach target, ${TARGETST}, $(addprefix ${OUTDIR}/objects/, ${target}))
@@ -39,7 +36,7 @@ OBJS := ${OBJSTARGETS} ${OBJSGAMES}
 
 .SECONDARY: $(OBJS:./%=%.o)
 
-#export LD_LIBRARY_PATH="${PWD}/build/lib"
+#export LD_LIBRARY_PATH="${PWD}/lib"
 
 all: ${OUTDIR}/data/ ${TARGETS} ${GAMES}
 

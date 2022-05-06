@@ -55,8 +55,6 @@ int main(int argc, char *argv[]){
         exit(2);
     }
 
-    int servPID = read_server_pid();
-
     struct sigaction action1, action2;
     action1.sa_flags = 0;
     sigemptyset(&action1.sa_mask);
@@ -71,6 +69,8 @@ int main(int argc, char *argv[]){
     sigemptyset(&new);
     sigaddset(&new, SIGUSR1);
     sigprocmask(SIG_BLOCK, &new, &old);
+
+    int servPID = read_server_pid();
 
     kill(servPID, SIGUSR1);
     int fd = open(SERVER_FIFO, O_WRONLY);
