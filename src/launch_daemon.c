@@ -34,7 +34,7 @@ int main (int argc, char * argv[]){
             #endif
             close(STDIN_FILENO);
             close(STDOUT_FILENO);
-            // close(STDERR_FILENO);
+            close(STDERR_FILENO);
             #ifdef VALGRIND
                 int len = argc-1;
                 char * progServName = calloc(strlen(argv[1])+3, sizeof(char));

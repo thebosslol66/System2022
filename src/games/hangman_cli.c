@@ -140,7 +140,9 @@ int main(int argc, char *argv[]){
     sigemptyset(&action2.sa_mask);
     action2.sa_handler = handSIGUSR2;
     sigaction(SIGUSR2, &action2, NULL);
-	
+	sigaction(SIGINT, &action2, NULL);
+	sigaction(SIGQUIT, &action2, NULL);
+	sigaction(SIGTERM, &action2, NULL);
 
 	serverWord = recv_string(SERV_IN_FILENO);
 	if (serverWord == NULL){

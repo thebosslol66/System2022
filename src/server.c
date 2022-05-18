@@ -38,7 +38,6 @@ int digit_in_number(int nb){
 }
 
 int main(int argc, char *argv[]){
-    close(STDERR_FILENO);
 	if (!isatty(STDERR_FILENO) && errno == EBADF){
 		// int output = open(LOG_FILE, O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
         // if (output < 0){
@@ -89,7 +88,7 @@ int main(int argc, char *argv[]){
 
     struct stat sb;
     if (!(stat(FIFO_DIR, &sb) == 0 && S_ISDIR(sb.st_mode))) {
-        if (mkdir(FIFO_DIR, 0755) == -1){
+        if (mkdir(FIFO_DIR, FIFO_MODE) == -1){
             dperror("mkdir");
             exit(5);
         }
@@ -240,9 +239,12 @@ int main(int argc, char *argv[]){
         }
     }
 
-    for (int i=0; i< childNb; i++){
-        wait(NULL);
+    if (childNb > 0){
+        do {
+            pause();
+        } while (childNb > 0);
     }
+
 	unlink(PID_AD_FILE);
     fflush(stderr);
     fclose(stdout);

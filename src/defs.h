@@ -15,6 +15,7 @@
 #define PID_AD_FILE "/tmp/game_server.pid"
 #define SERVER_FIFO "/tmp/game_server.fifo"
 #define FIFO_DIR "/tmp/game_server"
+#define FIFO_MODE 0755
 
 #ifdef DEBUG
 #define dperror(a) perror(a)

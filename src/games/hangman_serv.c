@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
     sigaction(SIGINT, &action2, NULL);
     sigaction(SIGQUIT, &action2, NULL);
     sigaction(SIGTERM, &action2, NULL);
-
+	sigaction(SIGPIPE, &action2, NULL);
 
 	char* initialisationInfo;
 	int lentInfo;
@@ -248,8 +248,8 @@ int main(int argc, char *argv[]){
 		alarm(RESP_TIMEOUT);
 		if (read(0, &c, sizeof(char)) == -1){
 			dperror("read");
+			break;
 		}
-
 		if (!inGame && !alarmRaise){
 		int nbCharFound = 0;
 			for (int i=0; i < lenWord; i++){

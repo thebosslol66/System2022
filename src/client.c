@@ -72,6 +72,8 @@ int main(int argc, char *argv[]){
 
     int servPID = read_server_pid();
 
+
+
     kill(servPID, SIGUSR1);
     int fd = open(SERVER_FIFO, O_WRONLY);
     if (fd == -1){
@@ -92,7 +94,6 @@ int main(int argc, char *argv[]){
     sigdelset(&suspend, SIGUSR1);
     sigdelset(&suspend, SIGUSR2);
     sigsuspend(&suspend);
-
 
     sigprocmask(SIG_SETMASK, &old, NULL);
     
