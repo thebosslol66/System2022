@@ -18,17 +18,6 @@ int read_server_pid(){
     return servPID;
 }
 
-int digit_in_number(int nb){
-    int i = 0;
-    do
-    {
-        nb = nb/10;
-        i++;
-    } while(nb > 0);
-    return i;
-}
-
-
 /* handler du signal SIGUSR1 */
 void handSIGUSR1(int sig) {
 }

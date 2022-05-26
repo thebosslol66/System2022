@@ -97,3 +97,30 @@ void list_remove(struct list *self, size_t index) {
   }
   free(node);
 }
+
+bool list_kill_client(struct list *self, pid_t serverPID){
+    struct list_node *node = self -> first;
+    while (node != NULL && node -> serverPID != serverPID){
+        node = node -> next;
+    }
+    if (node != NULL){
+        node -> isAlive = false;
+        return true;
+    }
+    return false;
+}
+
+size_t list_search_server(struct list *self, pid_t serverPID, pid_t *clientPID){
+    size_t index = 0;
+    struct list_node *node = self -> first;
+    while (node != NULL && node -> serverPID != serverPID){
+        node = node -> next;
+        index++;
+    }
+    if (node != NULL){
+        clientPID = &(node -> clientPID);
+        return index;
+    }
+    clientPID = NULL;
+    return -1;
+}
