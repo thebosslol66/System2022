@@ -1,26 +1,5 @@
 #include "hangman.h"
-#include "message.h"
-
-#define SERV_IN_FILENO 4
-#define SERV_OUT_FILENO 3
-
-void flush(FILE * fp){
-    int c;
-    while ((c = getc(fp)) != '\n' && c != EOF);
-}
-
-int have_space(char * str){
-	int strLength = strlen(str);
-	int haveSpace = 0;
-	int pos = 0;
-	while (pos < strLength && haveSpace == 0){
-		if (str[pos] == ' '){
-			haveSpace = 1;
-		}
-		pos++;
-	}
-	return haveSpace;
-}
+#include "hangman_cli.h"
 
 int inGame = 0;
 /* handler du signal SIGUSR1 */
@@ -149,7 +128,7 @@ int main(int argc, char *argv[]){
 		fprintf(stderr, "Error connecting to server\n");
 		exit(2);
 	}
-	if (strcmp(serverWord, "OK") != 0){
+	if (strcmp(serverWord, STRING_OK) != 0){
 		fprintf(stderr, "%s", serverWord);
 		free(serverWord);
 		exit(1);
