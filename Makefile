@@ -50,6 +50,10 @@ ${OUTDIR}/lib/libmessage.so: ${OUTDIR}/objects/lib/message.o
 	@mkdir -p $(@D)
 	${CC} -shared -o $@ $<
 
+#Build other library
+${OUTDIR}/objects/lib/utils.o: ${SOURCEDIR}/lib/utils.c ${SOURCEDIR}/lib/utils.h
+	@mkdir -p $(@D)
+	${CC} ${CFLAGS} ${LDLIBS} -c -o $@ $<
 
 #Build objects
 ${OUTDIR}/objects/%.o: ${SOURCEDIR}/%.c
@@ -57,14 +61,14 @@ ${OUTDIR}/objects/%.o: ${SOURCEDIR}/%.c
 	${CC} ${CFLAGS} ${LDLIBS} -c -o $@ $<
 
 #build main target
-${OUTDIR}/%: ${OUTDIR}/objects/%.o ${OUTDIR}/lib/libmessage.so
+${OUTDIR}/%: ${OUTDIR}/objects/%.o ${OUTDIR}/lib/libmessage.so ${OUTDIR}/objects/lib/utils.o
 	@mkdir -p $(@D)
-	${CC} ${LOADLIBES} $< ${LDFLAGS} -o $@ 
+	${CC} ${LOADLIBES} $< ${OUTDIR}/objects/lib/utils.o ${LDFLAGS} -o $@ 
 
 #Build games
-${OUTDIR}/games/%: ${OUTDIR}/objects/games/%.o ${OUTDIR}/lib/libmessage.so
+${OUTDIR}/games/%: ${OUTDIR}/objects/games/%.o ${OUTDIR}/lib/libmessage.so ${OUTDIR}/objects/lib/utils.o
 	@mkdir -p $(@D)
-	${CC} ${LOADLIBES} $< ${LDFLAGS} -o $@ 
+	${CC} ${LOADLIBES} $< ${OUTDIR}/objects/lib/utils.o ${LDFLAGS} -o $@ 
 
 
 #Build directory and copy data
