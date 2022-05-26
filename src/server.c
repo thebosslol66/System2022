@@ -52,7 +52,11 @@ int main(int argc, char *argv[]){
 		// 	exit(EXIT_FAILURE);
 		// }
         // fprintf(stdout, "It works\n");
-        freopen(LOG_FILE, "a+", stderr);
+        stderr = freopen(LOG_FILE, "a+", stderr);
+        if (stderr == NULL){
+            dperror("freopen");
+            exit(5);
+        }
 	}
 
 	fprintf(stderr, "It works\n");

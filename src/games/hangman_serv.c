@@ -77,13 +77,21 @@ int have_space(char * str){
 }
 
 int clientPID;
-int alarmRaise = 0;
+char * discoverWord = NULL;
+char * word = NULL;
+
 void handlerALRM(int sig){
 	#ifdef DEBUG
 	fprintf(stderr, "Too long sendig usr1 signal\n");
 	#endif
+	if (discoverWord != NULL) {
+		free(discoverWord);
+	}
+	if (word != NULL) {
+		free(word);
+	}
 	kill(clientPID, SIGUSR1);
-	alarmRaise = 1;
+	exit(0);
 }
 
 int inGame = 0;
@@ -112,7 +120,6 @@ void save_result(int nb, int nb_errors, char * word, time_t *now) {
 			send_string(1, SERV_NOT_ARGEE_WITH_NAME);
 			free(name);
 		}
-		alarm(RESP_TIMEOUT);
 		name = recv_string(0);
 		if (name != NULL){
 			int nameLength = strlen(name);
@@ -124,16 +131,12 @@ void save_result(int nb, int nb_errors, char * word, time_t *now) {
 				return;
 			}
 		}
-	}while((!correct && inGame != SERVER_QUIT) && !alarmRaise);
-	alarm(0);
+	}while(!correct && inGame != SERVER_QUIT);
 	if (inGame == SERVER_QUIT){
 		kill(clientPID, SIGUSR2);
-		free(name);
-		return;
-	}
-	if (alarmRaise){
-		free(name);
-		return;
+		free(discoverWord);
+		free(word);
+		exit(0);
 	}
 
 	record_result(nb, nb_errors, word, name, now);
@@ -152,7 +155,7 @@ int main(int argc, char *argv[]){
     sigaction(SIGINT, &action2, NULL);
     sigaction(SIGQUIT, &action2, NULL);
     sigaction(SIGTERM, &action2, NULL);
-	sigaction(SIGPIPE, &action2, NULL);
+
 
 	char* initialisationInfo;
 	int lentInfo;
@@ -201,7 +204,7 @@ int main(int argc, char *argv[]){
 	}
 
 	send_string(1, "OK");
-	char * word = NULL;
+
 	word = get_random_word_from_file(fp);
 	fclose(fp);
 
@@ -229,7 +232,6 @@ int main(int argc, char *argv[]){
 	fprintf(stderr, "string(%d) %s\n", lenWord, word);
 	#endif
 
-	char * discoverWord = NULL;
 	discoverWord = calloc(lenWord+1, sizeof(char));
 	for (int i=0; i<lenWord; i++){
 		discoverWord[i]= '-';
@@ -243,14 +245,14 @@ int main(int argc, char *argv[]){
 
 	int tryUsed = 0;
 	char c;
-	while (!inGame && !alarmRaise){
+	while (!inGame){
 		send_string(1, discoverWord);
 		alarm(RESP_TIMEOUT);
 		if (read(0, &c, sizeof(char)) == -1){
 			dperror("read");
-			break;
 		}
-		if (!inGame && !alarmRaise){
+
+		if (!inGame){
 		int nbCharFound = 0;
 			for (int i=0; i < lenWord; i++){
 				if (word[i] == c){
@@ -272,7 +274,7 @@ int main(int argc, char *argv[]){
 		}
 	}
 	alarm(0);
-	if (inGame == SERVER_QUIT || alarmRaise){
+	if (inGame == SERVER_QUIT){
 		kill(clientPID, SIGUSR2);
 		free(discoverWord);
 		free(word);
