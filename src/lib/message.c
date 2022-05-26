@@ -1,5 +1,3 @@
-
-  
 #include "message.h"
 
 int send_string(int fd, char *str){
