@@ -53,3 +53,47 @@ size_t count_file_lines(FILE * fp){
 	fseek(fp, SEEK_SET, 0);
 	return nb_line;
 }
+
+
+void list_create(struct list *self) {
+  self->first = NULL;
+}
+
+void list_destroy(struct list *self){
+    struct list_node *node = self -> first;
+    struct list_node *nextNode = NULL;
+    if (node == NULL){
+        return;
+    }
+    while(node!=NULL){
+        nextNode = node -> next;
+        free(node);
+        node = nextNode;
+    }
+}
+
+bool list_empty(const struct list *self) {
+  return self -> first == NULL;
+}
+
+void list_push_back(struct list *self, struct list_node *newNode) {
+  newNode->next = NULL;
+  struct list_node *curr = self -> first;
+  while (curr->next != NULL){
+      curr = curr->next;
+  }
+  curr->next = newNode;
+}
+
+void list_remove(struct list *self, size_t index) {
+  struct list_node *node = self -> first;
+  if (index == 0){
+      self->first = node -> next;
+  }
+  else {
+      for (size_t i = 0; i < index; i++){
+          node = node ->next;
+      }
+  }
+  free(node);
+}
