@@ -89,7 +89,13 @@ bool list_empty(const struct list *self) {
 
 void list_push_back(struct list *self, struct list_node *newNode) {
   newNode->next = NULL;
+
+  if (self -> first == NULL) {
+    self -> first = newNode;
+  }
+
   struct list_node *curr = self -> first;
+
   while (curr->next != NULL){
       curr = curr->next;
   }

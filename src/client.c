@@ -1,4 +1,5 @@
 #include "defs.h"
+#include "utils.h"
 
 int read_server_pid(){
     if(access(PID_AD_FILE, F_OK) == -1 || access(PID_AD_FILE, R_OK) == -1){

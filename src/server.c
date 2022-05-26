@@ -1,8 +1,15 @@
 #include "defs.h"
+#include "utils.h"
 
 #define LOG_FILE "/tmp/game_server.err"
 
 volatile int usr1_receive = 0;
+volatile int chld_receive = 0;
+pid_t serverPIDTerm = 0;
+struct list *pids = NULL;
+
+char clientFifo0BufferDel[LENGTH_OF_CLIENT_FIFOS];
+char clientFifo1BufferDel[LENGTH_OF_CLIENT_FIFOS];
 
 /* handler du signal SIGUSR1 */
 void handSIGUSR1(int sig) {
@@ -16,18 +23,104 @@ void handKILLSERV(int sig){
 }
 
 void handSIGCHLD(int sig){
+    chld_receive = 1;
     int status;
     childNb--;
-    wait(&status);
+    serverPIDTerm = wait(&status);
     if (WIFEXITED(status)){
         fprintf(stderr, "Processus fils terminé normalement: %d\n", WEXITSTATUS(status));
     }
     if (WIFSIGNALED(status)){
         fprintf(stderr, "Processus fils terminé anormalement: %d\n", WTERMSIG(status));
     }
+
+    list_kill_client(pids, serverPIDTerm);
 }
 
-int digit_in_number(int nb){
+void deinitialization(void) {
+    int resUnlink = unlink(PATH_PID_FILE_SERVER);
+
+    if (resUnlink == -1 && errno != ENOENT) {
+        fprintf(stderr, "Error while removing %s\n", PATH_PID_FILE_SERVER);
+        perror("unlink");
+    }
+
+    resUnlink = unlink(PATH_FIFO_GAME_SERVER);
+
+    if (resUnlink == -1 && errno != ENOENT) {
+        fprintf(stderr, "Error while removing FIFO %s\n", PATH_FIFO_GAME_SERVER);
+        perror("unlink");
+    }
+
+    DIR *dir = opendir(PATH_DIR_GAME_SERVER);
+
+    if (dir != NULL) {
+        struct dirent *info = readdir(dir);
+
+        while (info != NULL) {
+            if (info->d_name == NULL) {
+                break;
+            }
+
+            if (info->d_name[0] != '.') {
+                size_t sizeOfNameFifo = LENGTH_OF_PATH_DIR + strlen(info->d_name) + 2;
+                char *nameOfFifo = calloc(sizeOfNameFifo, sizeof(char));
+                sprintf(nameOfFifo, "%s%c%s", PATH_DIR_GAME_SERVER, '/', info->d_name);
+
+                resUnlink = unlink(nameOfFifo);
+
+                if (resUnlink == -1 && errno != ENOENT) {
+                    fprintf(stderr, "Error while removing FIFO %s\n", info->d_name);
+                    perror("unlink");
+                    free(nameOfFifo);
+                    exit(1);
+                }
+
+                free(nameOfFifo);
+            }
+
+            info = readdir(dir);
+        }
+
+        int retOfCosedir = closedir(dir);
+
+        if (retOfCosedir == -1) {
+            fprintf(stderr, "Error while closing directory %s\n", PATH_DIR_GAME_SERVER);
+            perror("closedir");
+        }
+    }
+
+    int resOfRmdir = rmdir(PATH_DIR_GAME_SERVER);
+
+    if (resOfRmdir == -1 && errno != ENOENT) {
+        fprintf(stderr, "Error while removing directory %s\n", PATH_DIR_GAME_SERVER);
+        perror("rmdir");
+    }
+
+    fprintf(stdout, "FILES SUCCESSFULLY REMOVED\n");
+}
+
+void remove_fifos(pid_t clientPID) {
+    sprintf(clientFifo0BufferDel, "%s%s%d%s", PATH_DIR_GAME_SERVER, "/cli", clientPID, "_0.fifo");
+
+    int resUnlink = unlink(clientFifo0BufferDel);
+
+    if (resUnlink == -1 && errno != ENOENT) {
+        fprintf(stderr, "Error while removing FIFO %s\n", clientFifo0BufferDel);
+        perror("unlink");
+    }
+
+    sprintf(clientFifo1BufferDel, "%s%s%d%s", PATH_DIR_GAME_SERVER, "/cli", clientPID, "_1.fifo");
+
+    resUnlink = unlink(clientFifo1BufferDel);
+
+    if (resUnlink == -1 && errno != ENOENT) {
+        fprintf(stderr, "Error while removing FIFO %s\n", clientFifo1BufferDel);
+        perror("unlink");
+    }
+}
+
+/*int digit_in_number(int nb){
     int i = 0;
     do
     {
@@ -35,9 +128,11 @@ int digit_in_number(int nb){
         i++;
     } while(nb > 0);
     return i;
-}
+}*/
 
 int main(int argc, char *argv[]){
+    atexit(deinitialization);
+
 	if (!isatty(STDERR_FILENO) && errno == EBADF){
 		// int output = open(LOG_FILE, O_CREAT | O_APPEND, S_IRUSR|S_IWUSR);
         // if (output < 0){
@@ -59,7 +154,7 @@ int main(int argc, char *argv[]){
         }
 	}
 
-	fprintf(stderr, "It works\n");
+	fprintf(stderr, "It works %d\n", getpid());
 
     if(access(PID_AD_FILE, F_OK) == 0){
         #ifdef DEBUG
@@ -119,6 +214,10 @@ int main(int argc, char *argv[]){
     actionCHLD.sa_handler = handSIGCHLD;
     sigaction(SIGCHLD, &actionCHLD, NULL);
 
+    pids = malloc(sizeof(struct list));
+    list_create(pids);
+
+    struct list_node *node = NULL;
 
     while(currentlyExecute){
 
@@ -183,7 +282,8 @@ int main(int argc, char *argv[]){
                             }
                             else {
                                 if (currentlyExecute != 0){
-                                    switch(fork()){
+                                    pid_t childPID = fork();
+                                    switch(childPID){
                                         case -1:{
                                             dperror("fork");
                                             haveError = 1;
@@ -220,6 +320,10 @@ int main(int argc, char *argv[]){
 											exit(1);
                                         }
                                         default:
+                                            node = malloc(sizeof(struct list_node));
+                                            node->clientPID = clientPID;
+                                            node->serverPID = childPID;
+                                            list_push_back(pids, node);
                                             break;
                                     }
                                     childNb++;
@@ -240,6 +344,18 @@ int main(int argc, char *argv[]){
 				free_recv_argv(programParam);
             }
             usr1_receive = 0;
+        } else if (chld_receive) {
+            pid_t clientPIDTerm = 0;
+            size_t index = list_search_server(pids, serverPIDTerm, &clientPIDTerm);
+            
+            /*if (kill(clientPIDTerm, SIGUSR2) == -1) {
+                fprintf(stderr, "ERROR can't send SIGUSR2 to clients\n");
+                dperror("kill");
+            }*/
+
+            remove_fifos(clientPIDTerm);
+            list_remove(pids, index);
+            chld_receive = 0;
         }
     }
 
@@ -249,7 +365,6 @@ int main(int argc, char *argv[]){
         } while (childNb > 0);
     }
 
-	unlink(PID_AD_FILE);
     fflush(stderr);
     fclose(stdout);
     
