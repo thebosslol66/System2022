@@ -55,6 +55,17 @@ size_t count_file_lines(FILE * fp){
 }
 
 
+int digit_in_number(int nb){
+    int i = 0;
+    do
+    {
+        nb = nb/10;
+        i++;
+    } while(nb > 0);
+    return i;
+}
+
+
 void list_create(struct list *self) {
   self->first = NULL;
 }
