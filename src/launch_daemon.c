@@ -1,5 +1,7 @@
 #include "launch_daemon.h"
 
+#define DEBUG
+
 int main (int argc, char * argv[]){
     if (argc != 2){
         printf("Usage: %s program\n", argv[0]);
@@ -30,7 +32,7 @@ int main (int argc, char * argv[]){
 
         if (child == 0){
             #ifdef DEBUG
-                printf("Daemon PID: %d\n", getpid());
+                printf("Daemon PID: %d PPID %d\n", getpid(), getppid());
             #endif
             close(STDIN_FILENO);
             close(STDOUT_FILENO);
@@ -57,7 +59,7 @@ int main (int argc, char * argv[]){
         }
         exit(0);
     }
-    int statu;
-    wait(&statu);
-    return statu;
+    int status;
+    wait(&status);
+    return status;
 }

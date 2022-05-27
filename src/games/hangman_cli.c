@@ -124,10 +124,12 @@ int main(int argc, char *argv[]){
 	sigaction(SIGTERM, &action2, NULL);
 
 	serverWord = recv_string(SERV_IN_FILENO);
+
 	if (serverWord == NULL){
-		fprintf(stderr, "Error connecting to server\n");
+		fprintf(stderr, "Error : can't connect to the server\n");
 		exit(2);
 	}
+
 	if (strcmp(serverWord, STRING_OK) != 0){
 		fprintf(stderr, "%s", serverWord);
 		free(serverWord);
