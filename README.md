@@ -63,7 +63,7 @@ SIGUSR1 signal in hangman_cli is useful for timeout. The SIGUSR2 signal in hangm
 The sigalarm hangman_serv sends SIGUSR1 to the client and then stops.
 If SIGINT, SIGTERM or SIGQUIT signals are detected, in hangman_serv it sends SIGUSR2 to the client.
 
---Hangman game usful macros--
+--Hangman game useful macros--
 
 The randomly chosen words are taken from SERV_WORD_FILE_PATH.
 If the user decides to save his nickname after a game, this saves the results in the macro file RESULT_FILE.
