@@ -34,4 +34,4 @@ We have finished the implementation that we left as a comment in the server and 
 
 ## Review of working in pairs
 
-
+In order to work harmoniously in pairs, we shared the tasks between the server, client, daemon and the games and the makefile. We sometimes coded similar parts and merged our work. We are very complementary and the work is going perfectly.
