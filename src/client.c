@@ -1,4 +1,4 @@
-#include "defs.h"
+#include "client.h"
 
 static pid_t serverPID = 0;
 volatile int usr1_receive = 0;

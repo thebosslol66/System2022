@@ -1,9 +1,9 @@
-#include "defs.h"
+#include "server.h"
 #include "utils.h"
 
 volatile int usr1_receive = 0;
 volatile int chld_receive = 0;
-static pid_t childTerminated = 0;
+// static pid_t childTerminated = 0;
 static char **args = NULL;
 static char clientFifo0Buffer[LENGTH_OF_CLIENT_FIFOS];
 static char clientFifo1Buffer[LENGTH_OF_CLIENT_FIFOS];
@@ -444,6 +444,10 @@ int main(int argc, char **argv) {
 				create_fifo_for_client(clientPID);
 				send_sigusr1_to_client(clientPID);
 				childPID = start_game();
+
+				#ifdef DEBUG
+				printf("CHILD PID : %d\n", childPID);
+				#endif
 				
 				/*newNode = malloc(sizeof(struct list_node));
 				newNode->clientPID = clientPID;
