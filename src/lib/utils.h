@@ -9,6 +9,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+/* Get a random number on 32 bits */
+unsigned int randInt(unsigned int max);
+/* Return if a string contains a space */
+int have_space(char * str);
+/* flush a file descriptor with extra chars */
+void flush(FILE * fp);
+/* count line number in a file */
+size_t count_file_lines(FILE * fp);
+/* Get the digits nunmber in a ginven number */
+int digit_in_number(int nb);
+
+
 /* A structure to link server and client */
 struct list_node {
     pid_t clientPID;
@@ -35,16 +47,5 @@ void list_remove(struct list *self, size_t index);
 bool list_kill_client(struct list *self, pid_t serverPID);
 /* Get the index of the node with the serverPID and set to the clientPID the client linked to */
 size_t list_search_server(struct list *self, pid_t serverPID, pid_t *clientPID);
-
-/* Get a random number on 32 bits */
-unsigned int randInt(unsigned int max);
-/* Return if a string contains a space */
-int have_space(char * str);
-/* flush a file descriptor with extra chars */
-void flush(FILE * fp);
-/* count line number in a file */
-size_t count_file_lines(FILE * fp);
-/* Get the digits nunmber in a ginven number */
-int digit_in_number(int nb);
 
 #endif //H_UTILS
