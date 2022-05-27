@@ -1,10 +1,12 @@
-# <div align="center"> Game server project </div>
+<center>
 
-## <div align="center"> Université de Franche-Comté </div>
-### <div align="center"> Alphée GROSDIDIER & Lucien MARTIAL </div>
+# Game server project
 
-<br>
-<hr>
+## Université de Franche-Comté
+
+### Alphée GROSDIDIER & Lucien MARTIAL
+
+</center><hr>
 
 ## Final Production Report
 
@@ -68,15 +70,29 @@ If SIGINT, SIGTERM or SIGQUIT signals are detected, in hangman_serv it sends SIG
 The randomly chosen words are taken from SERV_WORD_FILE_PATH.
 If the user decides to save his nickname after a game, this saves the results in the macro file RESULT_FILE.
 
+### Utils
 
-<br>
-<br>
+Here we define 5 function used in the project:
+
+* unsigned int randInt(unsigned int max);
+It generate a random number on 32 bytes to avoid problem with rand() generator. On some computer tis function can renuturn only number less then 32000. Our dict contai about 32500 so we decided to create this function.
+
+* int have_space(char * str);
+Common function for hangman_cli and hangman_serv for verifying if pseudo entered is valid and contain no space. We don't want to have duplicated function so we put it here.
+
+* void flush(FILE * fp);
+Mainly use to flush stdin when we get a char with fget() to avoid undesirable chars.
+
+* size_t count_file_lines(FILE * fp);
+A general function to count number of lines in a file. It takes in argument the file pointer.
+
+* int digit_in_number(int nb);
+Count the number of digits in a number. We use it to create dinamically the name of fifo used by client and server.
+
 
 ### Project testing
 
 In this project we first tested the **libmessage.so** library. We launched the **test_cli** and **test_serv** test programs, we also tested all the interrupt signals on each program, the hangman timeout. Tried to launch several programs at the same time on the server. All these tests were used with valgrind. And all these tests have been successfully passed.
-
-<br>
 
 ### Not done
 
