@@ -22,8 +22,6 @@
 
 #define PID_BUFFER 16
 
-#define USAGE "USAGE : %s hangman [-n N]", argv[0] // ???????????
-
 static pid_t serverPID = 0;
 volatile int usr1_receive = 0;
 
@@ -36,22 +34,8 @@ void handSIGUSR2(int sig) {
 	exit(2);
 }
 
-/*
-	Je ne comprends pas comment utiliser cette fonction sachant que les arguments varient en fonction du jeu.
-*/
-
-void verify_arguments(int argc, char **argv) {
-	/*bool validArgs = false;
-
-	if (!validArgs) {
-		fprintf(stderr, "Error : invalid arguments\n");
-		fprintf(stderr, USAGE);
-		exit(1);
-	}*/
-}
-
 bool game_exists(char *game) {
-	return true; // fichier existe et est executable
+	return access(game, X_OK) != -1;
 }
 
 pid_t read_server_pid(void) {
@@ -144,33 +128,25 @@ void send_client_informations(char **args) {
 	}
 }
 
-void sub_name(char **argv) {
-    size_t lengthOfGame = strlen(argv[1]) + LENGTH_OF_CLI_EXT + 1;
-
-    char *gameName = calloc(lengthOfGame, sizeof(char));
-    sprintf(gameName, "%s%s", argv[1], CLI_EXT);
-
-    // free(argv[1]);
-    argv[1] = gameName;
-}
-
 void init_fifos(char *clientFifo0Buffer, char *clientFifo1Buffer) {
     sprintf(clientFifo0Buffer, "%s%s%d%s", PATH_DIR_GAME_SERVER, "/cli", getpid(), "_0.fifo");
     sprintf(clientFifo1Buffer, "%s%s%d%s", PATH_DIR_GAME_SERVER, "/cli", getpid(), "_1.fifo");
 }
 
 int main(int argc, char **argv) {
-	/*if (argc < 3) {
+	if (argc < 2) {
 		fprintf(stderr, "Error : invalid arguments\n");
-		fprintf(stderr, USAGE);
 		exit(1);
-	}*/
+	}
 
-	//verify_arguments(argc, argv);
+    size_t lengthOfGame = strlen(argv[1]) + LENGTH_OF_CLI_EXT + 1;
 
-	if (!game_exists(argv[1])) {
+    char *gameName = calloc(lengthOfGame, sizeof(char));
+    sprintf(gameName, "%s%s", argv[1], CLI_EXT);
+
+	if (!game_exists(gameName)) {
 		fprintf(stderr, "Error : the game does not exists\n");
-		fprintf(stderr, USAGE);
+        free(gameName);
 		exit(1);
 	}
 
@@ -188,7 +164,7 @@ int main(int argc, char **argv) {
 
 	send_client_informations(args);
 
-    sub_name(argv);
+    argv[1] = gameName;
 
     sigsuspend(&oldEns);
 
@@ -201,8 +177,6 @@ int main(int argc, char **argv) {
         init_fifos(clientFifo0Buffer, clientFifo1Buffer);
 
         int fd0 = open(clientFifo0Buffer, O_WRONLY);
-
-        fprintf(stderr, "TEST");
 
         if (fd0 == -1) {
             fprintf(stderr, "Error while opening FIFO %s\n", clientFifo0Buffer);
@@ -217,8 +191,6 @@ int main(int argc, char **argv) {
             perror("open");
             exit(1);
         }
-
-        fprintf(stderr, "OUT : %d IN : %d\n", fd0, fd1);
 
         execv(argv[1], argv + 1);
         perror("execv");
