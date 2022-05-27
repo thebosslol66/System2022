@@ -54,7 +54,6 @@ size_t count_file_lines(FILE * fp){
 	return nb_line;
 }
 
-
 int digit_in_number(int nb){
     int i = 0;
     do
