@@ -1,26 +1,4 @@
-#define _DEFAULT_SOURCE
-
-#include <message.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <signal.h>
-
-#define PATH_PID_FILE_SERVER "/tmp/game_server.pid"
-#define PATH_FIFO_GAME_SERVER "/tmp/game_server.fifo"
-#define PATH_DIR_GAME_SERVER "/tmp/game_server"
-
-
-#define CLI_EXT "_cli"
-#define LENGTH_OF_CLI_EXT 4
-#define LENGTH_OF_CLIENT_FIFOS 64
-
-#define PID_BUFFER 16
+#include "defs.h"
 
 static pid_t serverPID = 0;
 volatile int usr1_receive = 0;

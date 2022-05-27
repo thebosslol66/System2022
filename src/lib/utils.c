@@ -115,7 +115,7 @@ void list_remove(struct list *self, size_t index) {
   free(node);
 }
 
-bool list_kill_client(struct list *self, pid_t serverPID){
+bool list_kill_client(struct list *self, pid_t serverPID) {
     struct list_node *node = self -> first;
     while (node != NULL && node -> serverPID != serverPID){
         node = node -> next;
