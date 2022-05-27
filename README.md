@@ -1,12 +1,12 @@
-<center>
 
-# Game server project
 
-## Université de Franche-Comté
+# <center> Game server project </center>
 
-### Alphée GROSDIDIER & Lucien MARTIAL
+## <center> Université de Franche-Comté </center>
 
-</center><hr>
+### <center> Alphée GROSDIDIER & Lucien MARTIAL </center>
+
+<hr>
 
 ## Final Production Report
 
