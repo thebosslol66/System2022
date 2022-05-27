@@ -1,12 +1,12 @@
+<div align='center'>
 
+# Game server project
 
-# <center> Game server project </center>
+## Université de Franche-Comté
 
-## <center> Université de Franche-Comté </center>
+### Alphée GROSDIDIER & Lucien MARTIAL
 
-### <center> Alphée GROSDIDIER & Lucien MARTIAL </center>
-
-<hr>
+</div><hr>
 
 ## Final Production Report
 
