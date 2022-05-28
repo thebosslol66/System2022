@@ -17,6 +17,27 @@ For the server to run permanently, it must be in daemon mode. By calling the ***
 In this game server project, we have created a server, a client and a hangman game, in two parts (hangman server and hangman client). During the development of this project, we tried to factorize the code as much as possible by coding many functions and a library.
 We created a library (**libmessage.so**) and a header file for each program. We have also coded a header file named **utils.h** which allows us to have various functions to facilitate the manipulation of structures in our programs.
 
+### Utils
+
+We define 5 useful function :
+
+* unsigned int randInt(unsigned int max);
+It generates a 32-byte random number to avoid problems with the rand() generator. On some computers, this function can only return numbers less than 32000. The hangman dictionnary contains about 32500 words.
+
+* int have_space(char * str);
+Common function for hangman_cli and hangman_serv to check if the entered nickname is valid and does not contain spaces. We don't want to have duplicate function, so we put it here.
+
+* void flush(FILE * fp);
+Mainly use to flush stdin when we get a char with fget() to avoid undesirable chars.
+
+* size_t count_file_lines(FILE * fp);
+A general function to count number of lines in a file. It takes in argument the file pointer.
+
+* int digit_in_number(int nb);
+Count the number of digits in a number. We use it to create dinamically the name of fifo used by client and server.
+
+<br>
+
 In order to facilitate the debugging and maintenance of the program, we have made extensive use of macro definitions. We have also checked all the results of system call returns to avoid potential bugs as much as possible. We have created as mentioned above a process which transforms the server into a demon and makes it run in the background.
 
 To assemble our project we made a complete makefile which takes into account all the programs.
@@ -69,26 +90,6 @@ If SIGINT, SIGTERM or SIGQUIT signals are detected, in hangman_serv it sends SIG
 
 The randomly chosen words are taken from SERV_WORD_FILE_PATH.
 If the user decides to save his nickname after a game, this saves the results in the macro file RESULT_FILE.
-
-### Utils
-
-Here we define 5 function used in the project:
-
-* unsigned int randInt(unsigned int max);
-It generate a random number on 32 bytes to avoid problem with rand() generator. On some computer tis function can renuturn only number less then 32000. Our dict contai about 32500 so we decided to create this function.
-
-* int have_space(char * str);
-Common function for hangman_cli and hangman_serv for verifying if pseudo entered is valid and contain no space. We don't want to have duplicated function so we put it here.
-
-* void flush(FILE * fp);
-Mainly use to flush stdin when we get a char with fget() to avoid undesirable chars.
-
-* size_t count_file_lines(FILE * fp);
-A general function to count number of lines in a file. It takes in argument the file pointer.
-
-* int digit_in_number(int nb);
-Count the number of digits in a number. We use it to create dinamically the name of fifo used by client and server.
-
 
 ### Project testing
 
